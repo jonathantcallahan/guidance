@@ -5,3 +5,9 @@ my_results/
 archive/
 .ipynb_checkpoints/
 .env
+Meta*/
+content/
+download.sh
+USE_POLICY
+LICENSE
+SadTalker
