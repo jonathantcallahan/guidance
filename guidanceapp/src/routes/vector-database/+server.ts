@@ -1,16 +1,16 @@
 // @ts-ignore
-import { WEAVIATE_API_KEY } from '$env/static/private';
-import { CLUSTER_URL } from '$env/static/private';
-import { OPENAI_AI_KEY } from '$env/static/private';
+//import { WEAVIATE_API_KEY } from '$env/static/private';
+//import { CLUSTER_URL } from '$env/static/private';
+//import { OPENAI_AI_KEY } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import weaviate from 'weaviate-client';
 	
 const client = await weaviate.connectToWeaviateCloud(
-	CLUSTER_URL,
+	process.env.CLUSTER_URL,
 	{
-		authCredentials: new weaviate.ApiKey(WEAVIATE_API_KEY),
+		authCredentials: new weaviate.ApiKey(process.env.WEAVIATE_API_KEY),
 		headers: {
-		'X-OpenAI-Api-Key': OPENAI_AI_KEY,
+		'X-OpenAI-Api-Key': process.env.OPENAI_AI_KEY,
 		}
 	} 
 )

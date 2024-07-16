@@ -1,4 +1,4 @@
-import { HUGGINGFACE_API_KEY } from '$env/static/private';
+//import { HUGGINGFACE_API_KEY } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 
 // @ts-ignore
@@ -17,7 +17,7 @@ export async function POST( {request} ) {
 			{
 				headers: { 
 					"Accept" : "application/json",
-					"Authorization": `Bearer ${HUGGINGFACE_API_KEY}`,
+					"Authorization": `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
 					"Content-Type": "application/json" 
 				},
 				method: "POST",
