@@ -31,6 +31,7 @@ export async function POST( {request} ) {
 		return json({ contents: processedResult });
 
 	} catch (err) {
+		console.log(err)
 		return json({ contents: 'Endpoint initializing... Try again in 15 minutes'})
 	}
 	
