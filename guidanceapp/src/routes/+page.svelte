@@ -2,8 +2,21 @@
     let question = '';
     let processedResponse = ''
 
+    async function getVectorSearch() {
+        console.log(question)
+        let response = await fetch('/vector-database', {
+            method: 'POST',
+            body: JSON.stringify({ question }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+
+        processedResponse = await response.json()
+    }
+
     async function getAnswer() {
-        const response = await fetch('/text-generation', {
+        let response = await fetch('/text-generation', {
 			method: 'POST',
 			body: JSON.stringify({ question }),
 			headers: {
@@ -12,17 +25,13 @@
 		});
 
         const responseData = await response.json();
-        processedResponse = responseData[0].generated_text.split('### Response:')[1]
-        console.log(processedResponse);
-
-
+        processedResponse = responseData.contents 
 
     };
 </script>
 
-<h1>Welcome to SvelteKit</h1>
 <input bind:value={question}/>
 <button on:click={getAnswer}>get answer</button>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> tsssso read </p>
+<button on:click={getVectorSearch}>Search text for related snippet</button>
  
 <p>{processedResponse}</p>
