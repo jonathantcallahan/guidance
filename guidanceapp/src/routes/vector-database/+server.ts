@@ -23,17 +23,15 @@ export async function POST( {request} ) {
 		const questions = client.collections.get('Question');
 	  
 		const result = await questions.query.nearText( requestText.question, {
-		  limit:2
+		  limit:1,
+		  returnMetadata: ['distance']
 		});
-	  
-		for (let object of result.objects) {
-		  console.log(JSON.stringify(object.properties, null, 2));
-		}
 	  
 		return result;
 	  }
 
 	const results = await nearTextQuery();
-	const textResults = results.objects[0].properties.text
+	console.log(JSON.stringify(results.objects, null, 2));
+	const textResults = JSON.stringify(results.objects)
 	return(json(textResults));  	
 }
