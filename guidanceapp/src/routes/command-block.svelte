@@ -1,7 +1,15 @@
 <script lang='ts'>
   import { onMount } from "svelte";
+  import { createEventDispatcher } from "svelte";
 
   export let ref: HTMLElement;
+  export let id;
+
+  const dispatch = createEventDispatcher();
+
+  onMount(() => {
+    dispatch('mount', {});
+  })
 
   let command = ''
   let readonly = false;
@@ -10,33 +18,32 @@
   let active = false;
 
   function handleFocus () {
-    cursorPlacement()
-    console.log('handle focus')
+    cursorPlacement();
     active = true;
   }
 
   function handleBlur () {
-    cursorPlacement()
-    console.log('handle blur')
+    cursorPlacement();
     active = false;
   }
 
   function handleSubmission(event: KeyboardEvent) {
     // put cursor in the correct position
-    cursorPlacement()
+    cursorPlacement();
     // if the key is not enter do not process
     if ( event.key != 'Enter' ) return;
     event.preventDefault();
     // make content uneditable
-    readonly = true
+    readonly = true;
+    dispatch('command', {
+      textContent: ref.textContent
+    });
   }
 
   function cursorPlacement() {
     let cursorPosition = window.getSelection()?.getRangeAt(0).getBoundingClientRect();
     cursorLeftPosition = cursorPosition?.left + "px";
     cursorTopPosition = cursorPosition?.top + "px";
-    
-    console.log(cursorTopPosition, cursorLeftPosition);
   }
 </script>
 
