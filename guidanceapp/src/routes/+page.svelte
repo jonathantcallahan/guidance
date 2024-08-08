@@ -1,5 +1,23 @@
-<script>
+<script lang='ts'>
     import CommandBlock from "./command-block.svelte";
+    import { onMount } from 'svelte';
+    
+    let ref: HTMLElement;
+    
+    onMount(() => {
+
+        ref.focus(); 
+        var range = document.createRange();
+        var sel = window.getSelection();
+        range.setStart(ref.childNodes[0], 13);
+        range.collapse(true);
+
+        if (sel) {
+            sel.removeAllRanges();
+            sel.addRange(range);
+            ref.click();
+        }
+    });     
 
     let question = '';
     let processedResponse = ''
@@ -39,4 +57,4 @@
 <p>{processedResponse}</p>
 
 
-<CommandBlock/>
+<CommandBlock bind:ref/>
