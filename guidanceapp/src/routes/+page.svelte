@@ -1,4 +1,6 @@
 <script>
+    import CommandBlock from "./command-block.svelte";
+
     let question = '';
     let processedResponse = ''
 
@@ -35,3 +37,6 @@
 <button on:click={getVectorSearch}>Search text for related snippet</button>
  
 <p>{processedResponse}</p>
+
+
+<CommandBlock/>
