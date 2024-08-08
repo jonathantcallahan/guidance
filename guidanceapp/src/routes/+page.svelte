@@ -18,7 +18,7 @@
         ]);
     }
 
-    function addResponse(prompt) {
+    function addResponse(prompt: CustomEvent) {
         components.update(n => [
             ...n,
             { id: n.length + 1, type: 'output', prompt: prompt}
@@ -93,7 +93,7 @@
         {#if component.type == 'command'}
             <CommandBlock bind:ref on:mount={handleFocus} on:command={addResponse} id={component.id} />
         {:else}
-            <CommandOutput on:mount={addCommand} id={component.id} />
+            <CommandOutput prompt={component.prompt} on:mount={addCommand} id={component.id} />
         {/if}
     {/each}
     <!-- <CommandBlock bind:ref on:command={handleCommand}/> -->
