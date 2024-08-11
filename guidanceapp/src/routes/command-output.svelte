@@ -41,13 +41,19 @@
             }
         })
         processedResponse = await response.json()
+        console.log(processedResponse)
     }
 
-    async function getAnswer() {
+    async function getAnswer(vectorSearch?: Boolean, generation?: Boolean, generationOnly?: Boolean ) {
 
         let response = await fetch('/text-generation', {
 			method: 'POST',
-			body: JSON.stringify({ question: pD.text }),
+			body: JSON.stringify({ 
+                question: pD.text,
+                vectorSearch: vectorSearch,
+                generation: generation,
+                generationOnly: generationOnly 
+            }),
 			headers: {
 				'Content-Type': 'application/json'
 			}
@@ -60,10 +66,10 @@
     function commandLogic() {
         if (!pD.com.alan) {
             processedResponse = 'Command not recognized. Try starting your submission with the string alanbotts'
-        } else {
+        } else if (!pD.opt.library && pD.com.ask) {
             initQuery = true
             initQueryLoading = true
-            getAnswer()
+            getVectorSearch()
             $: initQueryLoading = processedResponse ? false : true 
         }
 
