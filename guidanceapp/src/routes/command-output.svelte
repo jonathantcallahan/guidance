@@ -59,8 +59,9 @@
 			}
 		});
 
-        const responseData = await response.json();
+        const responseData = await response.json()
         processedResponse = responseData.contents 
+        return responseData
     };
 
     function commandLogic() {
@@ -69,7 +70,10 @@
         } else if (!pD.opt.library && pD.com.ask) {
             initQuery = true
             initQueryLoading = true
-            getVectorSearch()
+            getAnswer(true).then(data => {
+                console.log('answer retrieved')
+                processedResponse = data
+            })
             $: initQueryLoading = processedResponse ? false : true 
         }
 
