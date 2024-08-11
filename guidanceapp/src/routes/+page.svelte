@@ -6,12 +6,13 @@
     
     interface Component {
         id: Number,
-        type: 'command' | 'output'
+        type: 'command' | 'output',
+        prompt?: CustomEvent
     }
 
     let components = writable<Component[]>([]);
 
-    function addCommand(prefill) {
+    function addCommand(prefill?: CustomEvent) {
         components.update(n => [
             ...n,
             { id: n.length + 1, type: 'command', prefill: prefill}
@@ -28,7 +29,7 @@
     let ref: HTMLElement;
 
     onMount(() => {
-        addCommand('');
+        addCommand();
     })
 
     function handleFocus() {
@@ -49,52 +50,14 @@
     let question = '';
     let processedResponse = ''
 
-    async function getVectorSearch() {
-        console.log(question)
-        let response = await fetch('/vector-database', {
-            method: 'POST',
-            body: JSON.stringify({ question }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        processedResponse = await response.json()
-    }
-
-    async function getAnswer() {
-        let response = await fetch('/text-generation', {
-			method: 'POST',
-			body: JSON.stringify({ question }),
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		});
-
-        const responseData = await response.json();
-        processedResponse = responseData.contents 
-    };
-
-    // function handleCommand(textContent) {
-    //     console.log(textContent.detail.textContent);
-    //     const newOutput = new CommandOutput({
-    //         target: document.querySelector('#command-line')
-    //     })
-    // }
 </script>
-
-<input bind:value={question}/>
-<button on:click={getAnswer}>get answer</button>
-<button on:click={getVectorSearch}>Search text for related snippet</button>
- 
-<p>{processedResponse}</p>
 
 <div id='command-line'>
     {#each $components as component (component.id )}
         {#if component.type == 'command'}
             <CommandBlock bind:ref on:mount={handleFocus} on:command={addResponse} id={component.id} />
         {:else}
-            <CommandOutput prompt={component.prompt} on:mount={addCommand} id={component.id} />
+            <CommandOutput prompt={component.prompt} on:output={addCommand} id={component.id} />
         {/if}
     {/each}
-    <!-- <CommandBlock bind:ref on:command={handleCommand}/> -->
 </div>
