@@ -24,6 +24,7 @@ async function nearTextQuery(question) {
 export async function POST( {request} ) {
 	
 	const requestText = await request.json()
+	console.log('request received')
 
 	// const vectorResult = await nearTextQuery(requestText.question);
 	// console.log("vector result\n" + JSON.stringify(vectorResult));
@@ -56,7 +57,7 @@ export async function POST( {request} ) {
 
 		const result = await response.json()
 		console.log("hf response\n" + JSON.stringify(result))
-		const processedResult = result[0].generated_text.split('### Response:')[1]
+		const processedResult = result[0]?.generated_text?.split('### Response:')[1]
 		return json({ contents: processedResult });
 
 	} catch (err) {

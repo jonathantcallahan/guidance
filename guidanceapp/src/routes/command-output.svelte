@@ -1,6 +1,7 @@
 <script lang='ts'>
     import { onMount } from "svelte";
     import { createEventDispatcher } from "svelte";
+    import LoadingOutput from "./loading-output.svelte";
 
     export let id;
     export let prompt;
@@ -9,9 +10,7 @@
     let initQueryLoading = false
     let question = ''
     let processedResponse = ''
-    const loadingChars = ['⠁','⠂','⠄','⡀','⢀','⠠','⠐','⠈']
-    let activeCharOffset = 0
-    setInterval(() => activeCharOffset = activeCharOffset > 6 ? 0 : activeCharOffset + 1, 75)
+    
 
     let pD = {
         com: {
@@ -60,21 +59,20 @@
 		});
 
         const responseData = await response.json()
-        processedResponse = responseData.contents 
         return responseData
     };
 
     function commandLogic() {
         if (!pD.com.alan) {
-            processedResponse = 'Command not recognized. Try starting your submission with the string alanbotts'
+            processedResponse = 'Command not recognized. Enter --help for a list of accepted commands.'
         } else if (!pD.opt.library && pD.com.ask) {
             initQuery = true
             initQueryLoading = true
             getAnswer(true).then(data => {
                 console.log('answer retrieved')
-                processedResponse = data
+                processedResponse = data.contents 
+                console.log(processedResponse)
             })
-            $: initQueryLoading = processedResponse ? false : true 
         }
 
 
@@ -90,19 +88,10 @@
 </script>
 
 <style>
-    .markup-command {
-        color: red
-    }
+    
 </style>
 
 <div id={id}>
     {@html processedResponse}<br><br>
-    {#if initQuery}
-    <div>
-        <span>{initQueryLoading ? loadingChars[0 + activeCharOffset > 6 ? (0 + activeCharOffset - 7) : 0 + activeCharOffset] : 3}</span>
-        <span>{initQueryLoading ? loadingChars[1 + activeCharOffset > 6 ? (1 + activeCharOffset - 7) : 1 + activeCharOffset] : 3} </span>
-        <span>{initQueryLoading ? loadingChars[2 + activeCharOffset > 6 ? (2 + activeCharOffset - 7) : 2 + activeCharOffset] : 3}</span>
-        <span>Initiating query</span>
-    </div>
-    {/if}
+    <LoadingOutput loadingText='Initiating query'/>
 </div>

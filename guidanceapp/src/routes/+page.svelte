@@ -3,6 +3,7 @@
     import { onMount } from 'svelte';
     import CommandOutput from "./command-output.svelte";
     import { writable } from "svelte/store";
+    import Phosphor from "./phosphor.svelte";
     
     interface Component {
         id: Number,
@@ -52,7 +53,31 @@
 
 </script>
 
+<style>
+:global(body) {
+    margin: 0px
+}
+
+#command-line {
+    background: #192712;
+    color: #A2EE64;
+    font-family: monospace;
+    height: 100vh;
+    text-shadow:
+      0 0 7px #fff,
+      0 0 10px #fff,
+      0 0 21px #fff,
+      0 0 42px #0fa,
+      0 0 82px #0fa,
+      0 0 92px #0fa,
+      0 0 102px #0fa,
+      0 0 151px #0fa;
+}
+    
+</style>
+
 <div id='command-line'>
+    <Phosphor/>
     {#each $components as component (component.id )}
         {#if component.type == 'command'}
             <CommandBlock bind:ref on:mount={handleFocus} on:command={addResponse} id={component.id} />
