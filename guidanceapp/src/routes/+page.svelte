@@ -64,20 +64,13 @@
     font-family: monospace;
     height: 100vh;
     text-shadow:
-      0 0 7px #fff,
-      0 0 10px #fff,
-      0 0 21px #fff,
-      0 0 42px #0fa,
-      0 0 82px #0fa,
-      0 0 92px #0fa,
-      0 0 102px #0fa,
-      0 0 151px #0fa;
+    0 0 3px #ffffff63, 0 0 5px #ffffff73, 0 0 54px #ffffff7a, 0 0 62px #0fa, 0 0 92px #0fa;
 }
     
 </style>
 
 <div id='command-line'>
-    <Phosphor/>
+    <!-- <Phosphor/> -->
     {#each $components as component (component.id )}
         {#if component.type == 'command'}
             <CommandBlock bind:ref on:mount={handleFocus} on:command={addResponse} id={component.id} />

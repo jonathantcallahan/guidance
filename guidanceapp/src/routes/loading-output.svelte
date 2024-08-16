@@ -1,7 +1,7 @@
 <script lang='ts'>
 
     export let loadingText;
-    export let queryLoading = true;
+    export let queryLoading;
 
     const loadingChars = ['⠁','⠂','⠄','⡀','⢀','⠠','⠐','⠈']
     let activeCharOffset = 0

@@ -52,6 +52,7 @@ export async function POST( {request} ) {
 				},
 				method: "POST",
 				body: JSON.stringify(requestBody),
+				signal: AbortSignal.timeout(20000)
 			}
 		);
 

@@ -27,12 +27,19 @@
     active = false;
   }
 
-  function handleSubmission(event: KeyboardEvent) {
+  function preventNewline(event: KeyboardEvent) {
+    cursorPlacement();
+    // if the key is not enter do not process
+    if ( event.key != 'Enter' ) return
+    event.preventDefault()
+  }
+
+  function handleSubmission(event: KeyboardEvent, submission?: Boolean) {
     // put cursor in the correct position
     cursorPlacement();
     // if the key is not enter do not process
-    if ( event.key != 'Enter' ) return;
-    event.preventDefault();
+    if ( event.key != 'Enter' ) return
+    event.preventDefault()
     // make content uneditable
     readonly = true;
     dispatch('command', {
@@ -87,7 +94,7 @@
     <span class='line-start'>you@spaceshipearth:</span>
       <div aria-hidden='true' class='command-input'
         on:keyup={handleSubmission}
-        on:keydown={cursorPlacement} 
+        on:keydown={preventNewline} 
         on:click={cursorPlacement}
         on:focus={handleFocus} 
         on:blur={handleBlur}

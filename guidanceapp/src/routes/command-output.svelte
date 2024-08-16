@@ -2,15 +2,33 @@
     import { onMount } from "svelte";
     import { createEventDispatcher } from "svelte";
     import LoadingOutput from "./loading-output.svelte";
+    import Welcome from "./welcome.svelte";
+    import TalkingHead from "./talking-head.svelte";
 
     export let id;
     export let prompt;
 
     let initQuery = false
-    let initQueryLoading = false
     let question = ''
     let processedResponse = ''
+    let currentLoadingStage = 0
+    const loadingStages = [
+        'Initiating query',
+        'Mapping substructures',
+        'Establishing gateway',
+        'Connection secured',
+        'Projecting into quantum geometric space',
+        'Layering synaptic signals',
+        'Returning query result'
+    ]
     
+    const iterateLoading = () => {
+        if (currentLoadingStage > loadingStages.length - 1) return
+        currentLoadingStage += 1
+        setTimeout(iterateLoading, Math.random() * 1500 + 500)
+    }
+
+    iterateLoading()
 
     let pD = {
         com: {
@@ -65,11 +83,11 @@
     function commandLogic() {
         if (!pD.com.alan) {
             processedResponse = 'Command not recognized. Enter --help for a list of accepted commands.'
-        } else if (!pD.opt.library && pD.com.ask) {
+        } else if (!pD.opt.library && pD.com.ask && pD.text) {
             initQuery = true
-            initQueryLoading = true
             getAnswer(true).then(data => {
                 console.log('answer retrieved')
+                currentLoadingStage = loadingStages.length
                 processedResponse = data.contents 
                 console.log(processedResponse)
             })
@@ -92,6 +110,20 @@
 </style>
 
 <div id={id}>
-    {@html processedResponse}<br><br>
-    <LoadingOutput loadingText='Initiating query'/>
+    {#if !pD.opt.library && pD.com.ask && pD.text}
+        <br>
+        > {pD.text}<br>
+        >>{#if processedResponse}{@html processedResponse}{/if}
+        <br><br>
+        <TalkingHead /><br>
+    {/if}
+    {#each loadingStages as stage, i}
+        {#if i <= currentLoadingStage && initQuery}
+            <LoadingOutput loadingText={stage} queryLoading={i == currentLoadingStage}/>
+        {/if}
+    {/each}
+    {#if pD.com.welcome} 
+        <Welcome />
+    {/if}
+    <br>
 </div>
