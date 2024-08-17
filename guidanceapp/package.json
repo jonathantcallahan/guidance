@@ -22,6 +22,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@huggingface/inference": "^2.8.0",
 		"weaviate-client": "^3.0.9",
 		"weaviate-ts-client": "^2.2.0"
 	}
