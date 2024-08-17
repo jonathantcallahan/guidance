@@ -7,6 +7,7 @@
 
     export let id;
     export let prompt;
+    export let audioSettings;
 
     let initQuery = false
     let question = ''
@@ -23,7 +24,6 @@
     ]
     const synth = window.speechSynthesis
     const voices = synth.getVoices()
-    let audioActive = true;
     
     const iterateLoading = () => {
         if (currentLoadingStage > loadingStages.length - 1) return
@@ -33,7 +33,7 @@
 
     $: processedResponse && speakResponse()
     const speakResponse = () => {
-        if (!audioActive) return
+        if (!audioSettings) return
         const toSpeak = new SpeechSynthesisUtterance(processedResponse)
         toSpeak.voice = voices[6]
         synth.speak(toSpeak)
@@ -102,6 +102,9 @@
                 processedResponse = data.contents 
                 console.log(processedResponse)
             })
+        } else if(pD.com.audio) {
+            console.log('current audio is ' + audioSettings)
+            dispatch('audio', {})
         }
 
 
@@ -123,9 +126,8 @@
 <div id={id}>
     {#if !pD.opt.library && pD.com.ask && pD.text}
         <br>
-        > {pD.text}<br>
-        >>{#if processedResponse}{@html processedResponse}{/if}
-        <br>
+        <div>> {pD.text}</div>
+        <div>>>{#if processedResponse}{@html processedResponse}{/if}</div>
         <TalkingHead /><br>
     {/if}
     {#each loadingStages as stage, i}
@@ -135,6 +137,9 @@
     {/each}
     {#if pD.com.welcome} 
         <Welcome />
+    {/if}
+    {#if pD.com.audio} 
+        <div>Audio output turned {audioSettings ? 'on' : 'off'}</div>
     {/if}
     <br>
 </div>

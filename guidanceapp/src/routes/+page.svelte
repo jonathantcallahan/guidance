@@ -11,7 +11,8 @@
         prompt?: CustomEvent
     }
 
-    let components = writable<Component[]>([]);
+    let components = writable<Component[]>([])
+    let audioSettings = true
 
     function addCommand(prefill?: CustomEvent) {
         components.update(n => [
@@ -25,6 +26,10 @@
             ...n,
             { id: n.length + 1, type: 'output', prompt: prompt}
         ]);
+    }
+
+    function updateAudio() {
+        audioSettings = !audioSettings
     }
 
     let ref: HTMLElement;
@@ -75,7 +80,7 @@
         {#if component.type == 'command'}
             <CommandBlock bind:ref on:mount={handleFocus} on:command={addResponse} id={component.id} />
         {:else}
-            <CommandOutput prompt={component.prompt} on:output={addCommand} id={component.id} />
+            <CommandOutput prompt={component.prompt} on:output={addCommand} audioSettings={audioSettings} on:audio={updateAudio} id={component.id} />
         {/if}
     {/each}
 </div>
