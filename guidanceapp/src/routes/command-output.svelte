@@ -21,11 +21,22 @@
         'Layering synaptic signals',
         'Returning query result'
     ]
+    const synth = window.speechSynthesis
+    const voices = synth.getVoices()
+    let audioActive = true;
     
     const iterateLoading = () => {
         if (currentLoadingStage > loadingStages.length - 1) return
         currentLoadingStage += 1
         setTimeout(iterateLoading, Math.random() * 1500 + 500)
+    }
+
+    $: processedResponse && speakResponse()
+    const speakResponse = () => {
+        if (!audioActive) return
+        const toSpeak = new SpeechSynthesisUtterance(processedResponse)
+        toSpeak.voice = voices[6]
+        synth.speak(toSpeak)
     }
 
     iterateLoading()
@@ -114,7 +125,7 @@
         <br>
         > {pD.text}<br>
         >>{#if processedResponse}{@html processedResponse}{/if}
-        <br><br>
+        <br>
         <TalkingHead /><br>
     {/if}
     {#each loadingStages as stage, i}

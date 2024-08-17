@@ -62,7 +62,7 @@
     background: #192712;
     color: #A2EE64;
     font-family: monospace;
-    height: 100vh;
+    min-height: 100vh;
     text-shadow:
     0 0 3px #ffffff63, 0 0 5px #ffffff73, 0 0 54px #ffffff7a, 0 0 62px #0fa, 0 0 92px #0fa;
 }
