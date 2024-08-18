@@ -17,7 +17,7 @@
 
     let initQuery = false
     let question = ''
-    let processedResponse = ''
+    let processedResponse: String
     let currentLoadingStage = 0
     const loadingStages = [
         'Initiating query',
@@ -65,18 +65,18 @@
         text: prompt.detail.textContent.match(/(?<=").*(?=")/)
     };
 
-    async function getVectorSearch() {
-        console.log(question)
-        let response = await fetch('/vector-database', {
-            method: 'POST',
-            body: JSON.stringify({ question }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        processedResponse = await response.json()
-        console.log(processedResponse)
-    }
+    // async function getVectorSearch() {
+    //     console.log(question)
+    //     let response = await fetch('/vector-database', {
+    //         method: 'POST',
+    //         body: JSON.stringify({ question }),
+    //         headers: {
+    //             'Content-Type': 'application/json'
+    //         }
+    //     })
+    //     processedResponse = await response.json()
+    //     console.log(processedResponse)
+    // }
 
     async function getAnswer(vectorSearch?: Boolean, generation?: Boolean, generationOnly?: Boolean ) {
 
@@ -107,6 +107,7 @@
                 currentLoadingStage = loadingStages.length
                 bookName = data.book
                 vectorDistance = data.distance
+                processedResponse = data.contents
                 console.log(processedResponse)
             })
         } else if(pD.com.audio) {
@@ -140,47 +141,49 @@
 </style>
 
 <div id={id}>
-    {#if !pD.opt.library && pD.com.ask && pD.text}
+    {#if !pD.opt.library && pD.com.ask && pD.text && currentLoadingStage >= loadingStages.length}
         <br>
         {#if vectorDistance > .2}
-        <div>
-            WARNING: Unusually large vector distance. Results may be unpredictable.<br> 
-            Consider tailoring your question to be more suited for the target consciousness.
-        </div>
-        <br>
+            <div>
+                WARNING: Unusually large vector distance. Results may be unpredictable.<br> 
+                Consider tailoring your question to be more suited for the target consciousness.
+            </div>
+            <br>
         {/if}
         <div>> {pD.text}</div>
         <div>>>{#if processedResponse}{@html processedResponse}{/if}</div>
         <TalkingHead /><br>
         {#if !pD.opt.plain && processedResponse}
-        <div class='meta-stats-container'>
-            <div class='stats-row'>
-                <div>Execution time: </div>
-                <div>{executionTime}</div>
-            </div>
-            {#if !pD.opt.generate}
-            <div class='stats-row'>
-                <div>Vector distance: </div>
-                <div>{vectorDistance}</div>
-            </div>
-            <div class='stats-row'>
-                <div>Entry used: </div>
-                <div>{usedEntry}</div>
-            </div>
-            <div class='stats-row'>
-                <div>Reference text: </div>
-                <div>{bookName}</div>
-            </div>
+            <div class='meta-stats-container'>
+                <div class='stats-row'>
+                    <div>Execution time: </div>
+                    <div>{executionTime}</div>
+                </div>
+                {#if !pD.opt.generate}
+                <div class='stats-row'>
+                    <div>Vector distance: </div>
+                    <div>{vectorDistance}</div>
+                </div>
+                <div class='stats-row'>
+                    <div>Entry used: </div>
+                    <div>{usedEntry}</div>
+                </div>
+                <div class='stats-row'>
+                    <div>Reference text: </div>
+                    <div>{bookName}</div>
+                </div>
             {/if}
         </div>
         <br>
         {/if}
     {/if}
+    {#if currentLoadingStage < loadingStages.length}
     {#each loadingStages as stage, i}
         {#if i <= currentLoadingStage && initQuery}
-            <LoadingOutput loadingText={stage} queryLoading={i == currentLoadingStage}/>
-        {/if}
-    {/each}
+                <LoadingOutput loadingText={stage} queryLoading={i == currentLoadingStage}/>
+            {/if}
+        {/each}
+    {/if}
     {#if pD.com.welcome} 
         <Welcome />
     {/if}
