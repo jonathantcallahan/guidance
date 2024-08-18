@@ -17,7 +17,7 @@
 
     let initQuery = false
     let question = ''
-    let processedResponse: String
+    let processedResponse: string
     let currentLoadingStage = 0
     const loadingStages = [
         'Initiating query',
@@ -28,8 +28,6 @@
         'Layering synaptic signals',
         'Returning query result'
     ]
-    const synth = window.speechSynthesis
-    const voices = synth.getVoices()
     
     const iterateLoading = () => {
         if (currentLoadingStage > loadingStages.length - 1) return
@@ -40,8 +38,12 @@
     $: processedResponse && speakResponse()
     const speakResponse = () => {
         if (!audioSettings) return
+        const synth = window.speechSynthesis
+        const voices = synth.getVoices()
         const toSpeak = new SpeechSynthesisUtterance(processedResponse)
         toSpeak.voice = voices[6]
+        toSpeak.pitch = .001
+        toSpeak.rate = 1.2
         synth.speak(toSpeak)
     }
 
@@ -64,19 +66,6 @@
         },
         text: prompt.detail.textContent.match(/(?<=").*(?=")/)
     };
-
-    // async function getVectorSearch() {
-    //     console.log(question)
-    //     let response = await fetch('/vector-database', {
-    //         method: 'POST',
-    //         body: JSON.stringify({ question }),
-    //         headers: {
-    //             'Content-Type': 'application/json'
-    //         }
-    //     })
-    //     processedResponse = await response.json()
-    //     console.log(processedResponse)
-    // }
 
     async function getAnswer(vectorSearch?: Boolean, generation?: Boolean, generationOnly?: Boolean ) {
 
@@ -103,15 +92,14 @@
         } else if (!pD.opt.library && pD.com.ask && pD.text) {
             initQuery = true
             getAnswer(true).then(data => {
-                console.log('answer retrieved')
                 currentLoadingStage = loadingStages.length
                 bookName = data.book
+                usedEntry = data.distance < .2
                 vectorDistance = data.distance
                 processedResponse = data.contents
-                console.log(processedResponse)
+                executionTime = data.executionTime
             })
         } else if(pD.com.audio) {
-            console.log('current audio is ' + audioSettings)
             dispatch('audio', {})
         }
 
@@ -119,10 +107,9 @@
         dispatch('output', {})
     }
     
-    const dispatch = createEventDispatcher();
+    const dispatch = createEventDispatcher()
     onMount(() => {
-        //let rawPrompt = prompt.detail.textContent
-        console.log(JSON.stringify(pD))
+        window.speechSynthesis.cancel()
         commandLogic()
     })
 </script>
@@ -131,11 +118,15 @@
 .stats-row {
     display: flex;
     flex-direction: row;
-    width: 300px;
+    width: 400px;
 }
 
 .stats-row > div {
     flex: 1;
+}
+
+.stats-row > div:nth-of-type(1) {
+    flex: 0 0 30% !important
 }
     
 </style>
@@ -157,7 +148,7 @@
             <div class='meta-stats-container'>
                 <div class='stats-row'>
                     <div>Execution time: </div>
-                    <div>{executionTime}</div>
+                    <div>{executionTime} MS</div>
                 </div>
                 {#if !pD.opt.generate}
                 <div class='stats-row'>
@@ -178,8 +169,9 @@
         {/if}
     {/if}
     {#if currentLoadingStage < loadingStages.length}
-    {#each loadingStages as stage, i}
-        {#if i <= currentLoadingStage && initQuery}
+        <br>
+        {#each loadingStages as stage, i}
+            {#if i <= currentLoadingStage && initQuery}
                 <LoadingOutput loadingText={stage} queryLoading={i == currentLoadingStage}/>
             {/if}
         {/each}
@@ -188,6 +180,7 @@
         <Welcome />
     {/if}
     {#if pD.com.audio} 
+        <br>
         <div>Audio output turned {audioSettings ? 'on' : 'off'}</div>
     {/if}
     <br>
