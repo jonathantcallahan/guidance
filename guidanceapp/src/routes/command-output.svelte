@@ -4,6 +4,7 @@
     import LoadingOutput from "./loading-output.svelte";
     import Welcome from "./welcome.svelte";
     import TalkingHead from "./talking-head.svelte";
+    import { json } from '@sveltejs/kit'
 
     export let id;
     export let prompt;
@@ -20,13 +21,10 @@
     let processedResponse: string
     let currentLoadingStage = 0
     const loadingStages = [
-        'Initiating query',
-        'Mapping substructures',
-        'Establishing gateway',
-        'Connection secured',
-        'Projecting into quantum geometric space',
-        'Layering synaptic signals',
-        'Returning query result'
+        'Establishing gateway', // processesing text 
+        'Mapping substructures', // sending request to server, server queries vector database
+        'Projecting quantum geometrics', // gets response from vector database, server runs inference through huggingface
+        'Layering synaptic signals' // shows response to user
     ]
     
     const iterateLoading = () => {
@@ -47,7 +45,7 @@
         synth.speak(toSpeak)
     }
 
-    iterateLoading()
+    //iterateLoading()
 
     let pD = {
         com: {
@@ -67,29 +65,120 @@
         text: prompt.detail.textContent.match(/(?<=").*(?=")/)
     };
 
+				
+    // async function nearTextQuery(question) {
+        
+    //     const client = await weaviate.connectToWeaviateCloud(
+    //         import.meta.env.CLUSTER_URL || 'null',
+    //         {
+    //             authCredentials: new weaviate.ApiKey(import.meta.env.WEAVIATE_API_KEY || 'null'),
+    //             headers: {
+    //             'X-OpenAI-Api-Key': import.meta.env.OPENAI_AI_KEY || 'null',
+    //             }
+    //         } 
+    //     )
+
+    //     const questions = client.collections.get('Question');
+        
+    //     const result = await questions.query.nearText( question, {
+    //         limit:1,
+    //         returnMetadata: ['distance']
+    //     });
+        
+    //     return result;
+    // }
+
+
+    // async function llmQuery(request) {
+	
+    //     //const requestText = await request.json()
+    //     const requestText = request
+    
+    //     let startTime = Date.now()
+
+    //     const vectorResult = await nearTextQuery(requestText.question);
+    //     const vectorResultClean = vectorResult.objects[0].properties.answer;
+    //     const distance = vectorResult.objects[0].metadata?.distance || 1;
+
+    //     let inputRAG = `Below is an instruction that describes a task, paired with an input that provides further context. Using the provided materials, return a response that appropriately completes the request.\n### Instruction: \nYou are English author and intellectual Alan Watts. As always, do not diverge from your standard speech patterns and do not over-embellish. Please answer the following question using the content from the reference text that follows it. You may change the content so that it more directly addresses the question being posed in a semantically correct manner. Do not repeat the question, simply answer the question using the concepts in the refernce text. \n### Input:\n${ requestText.question } <start of reference text> ${ vectorResultClean } <end of the reference text> \n### Response:\n`;
+    //     let inputsNoRAG = `Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\n### Instruction: \nYou are English author and intellectual Alan Watts. Please answer the following question using your standard speech patterns but do not over-embellish. DO NOT include the original question in the response. The response MUST NOT INCLUDE the question that is being asked. \n### Input:\n${ requestText.question }\n### Response:\n`
+
+    //     const requestBody = { 
+    //         inputs: distance > .2 ? inputsNoRAG : inputRAG,
+    //         parameters: {}
+    //     }
+
+    //     try {
+            
+    //         const inference = new HfInference(import.meta.env.HUGGING_FACE_API_KEY)
+    //         const llama = inference.endpoint('https://jq3a4fn9siusw6ee.us-east-1.aws.endpoints.huggingface.cloud')
+    //         const results = await llama.textGeneration(requestBody)
+
+    //         let processedText = results?.generated_text?.split('### Response:')[1]
+    //         console.log(results)
+    //         console.log('processed text /n' + processedText)
+            
+    //         return json({
+    //             contents: processedText,
+    //             distance: distance,
+    //             book: vectorResult.objects[0].properties.book,
+    //             executionTime: Date.now() - startTime
+    //         })
+
+    //     } catch (err) {
+    //         console.log(err)
+    //         return json({ contents: 'Error on server'})
+    //     }
+	
+    // }
+
     async function getAnswer(vectorSearch?: Boolean, generation?: Boolean, generationOnly?: Boolean ) {
 
-        let response = await fetch('/text-generation', {
-			method: 'POST',
-			body: JSON.stringify({ 
+        let body = JSON.stringify({ 
                 question: pD.text,
                 vectorSearch: vectorSearch,
                 generation: generation,
                 generationOnly: generationOnly 
-            }),
+        })
+        
+        let response = await fetch('/text-generation', {
+			method: 'POST',
+			body: body,
 			headers: {
 				'Content-Type': 'application/json'
 			}
 		});
 
+        // let response = await llmQuery(body)
+
+        console.log(response)
+
         const responseData = await response.json()
         return responseData
     };
+
+    let result: string[] = []
+    async function streamingTest() {
+        console.log('streaming test running')
+        const response = await fetch('/text-generation')
+        const reader = response.body?.pipeThrough( new TextDecoderStream()).getReader()
+        while (true) {
+            const { value, done } = await reader?.read()
+            if (done) break
+            result.push(value)
+            result = result
+        }
+
+        
+    }
+
+    streamingTest()
 
     function commandLogic() {
         if (!pD.com.alan) {
             processedResponse = 'Command not recognized. Enter --help for a list of accepted commands.'
         } else if (!pD.opt.library && pD.com.ask && pD.text) {
+            
             initQuery = true
             getAnswer(true).then(data => {
                 currentLoadingStage = loadingStages.length
@@ -132,6 +221,7 @@
 </style>
 
 <div id={id}>
+    {#each result as str} {str}{/each}
     {#if !pD.opt.library && pD.com.ask && pD.text && currentLoadingStage >= loadingStages.length}
         <br>
         {#if vectorDistance > .2}
