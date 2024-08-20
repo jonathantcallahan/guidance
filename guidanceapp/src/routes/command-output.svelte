@@ -158,9 +158,22 @@
     };
 
     let result: string[] = []
+    
     async function streamingTest() {
+
+        const queryObj: object = {
+            question: pD.text,
+            vectorSearch: pD.opt.library,
+            generation: pD.opt.generate 
+        }
+
+        const baseUrl = ('/text-generation/?')
+        const params = new URLSearchParams(queryObj).toString()
+
+        //console.log(url)
+
         console.log('streaming test running')
-        const response = await fetch('/text-generation')
+        const response = await fetch(baseUrl + params)
         const reader = response.body?.pipeThrough( new TextDecoderStream()).getReader()
         while (true) {
             const { value, done } = await reader?.read()

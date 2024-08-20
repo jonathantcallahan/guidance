@@ -3,8 +3,10 @@ import weaviate from 'weaviate-client'
 import { HfInference } from '@huggingface/inference'
 
 
-export async function GET() {
+export async function GET({ url }) {
 	
+	console.log(url)
+
 	const encoder = new TextEncoder()
 	const readable = new ReadableStream({
 		async start(controller) {
