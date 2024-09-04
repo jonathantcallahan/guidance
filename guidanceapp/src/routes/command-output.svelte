@@ -112,12 +112,12 @@
                 currentLoadingStage = parsedResponse.value
             }
             if (parsedResponse.content) {
-                 
-                bookName = parsedResponse.content.book
-                usedEntry = parsedResponse.content.distance < .2
-                vectorDistance = parsedResponse.content.distance
-                processedResponse = parsedResponse.content.contents
-                executionTime = parsedResponse.content.executionTime
+                 processedResponse = processedResponse + parsedResponse.content
+                // bookName = parsedResponse.content.book
+                // usedEntry = parsedResponse.content.distance < .2
+                // vectorDistance = parsedResponse.content.distance
+                // processedResponse = parsedResponse.content.contents
+                // executionTime = parsedResponse.content.executionTime
             }
             if (done) break
         }

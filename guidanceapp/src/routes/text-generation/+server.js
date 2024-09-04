@@ -1,6 +1,11 @@
 import { json } from '@sveltejs/kit'
 import weaviate from 'weaviate-client'
 import { HfInference } from '@huggingface/inference'
+import OpenAI from "openai"
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_AI_KEY,
+});
 
 
 const client = await weaviate.connectToWeaviateCloud(
@@ -62,25 +67,43 @@ export async function GET({ url }) {
 
 				try {
 					
-					const inference = new HfInference(process.env.HUGGING_FACE_API_KEY)
-					const llama = inference.endpoint('https://jq3a4fn9siusw6ee.us-east-1.aws.endpoints.huggingface.cloud')
+					// const inference = new HfInference(process.env.HUGGING_FACE_API_KEY)
+					// const llama = inference.endpoint('https://jq3a4fn9siusw6ee.us-east-1.aws.endpoints.huggingface.cloud')
 					
-					const results = await llama.textGeneration(requestBody)
+					// const results = await llama.textGeneration(requestBody)
 					
-					console.log(results)
+					// console.log(results)
 
-					let processedText = results?.generated_text?.split('### Response:')[1]
+					// let processedText = results?.generated_text?.split('### Response:')[1]
 					
-					console.log('processed text /n' + processedText)
+					// console.log('processed text /n' + processedText)
 
-					const apiResults = {
-							contents: processedText,
-							distance: distance,
-							book: book,
-							executionTime: Date.now() - startTime
+					// const apiResults = {
+					// 		contents: processedText,
+					// 		distance: distance,
+					// 		book: book,
+					// 		executionTime: Date.now() - startTime
+					// }
+
+					async function main() {
+						console.log('main running')
+						const assistant = await openai.beta.assistants.retrieve("asst_eA8wZ6dtHQdt4Svv6Dupp0ZV");
+						const thread = await openai.beta.threads.create();
+						const message = await openai.beta.threads.messages.create( thread.id, { role: "user", content: searchText });
+						const run = openai.beta.threads.runs.stream(thread.id, {
+							assistant_id: assistant.id
+						  })
+							.on('textCreated', (text) => process.stdout.write('\nassistant > '))
+							.on('textDelta', (textDelta, snapshot) => { controller.enqueue(encoder.encode(`{type: "response stream", content: ${textDelta.value}}`)) })
 					}
 
-					controller.enqueue(encoder.encode(`{"type": "stage", "value": 3, "content": ${JSON.stringify(apiResults)}}`))
+					main();
+
+					
+
+					let apiResults = { test: "test" } 
+
+					//controller.enqueue(encoder.encode(`{"type": "stage", "value": 3, "content": ${JSON.stringify(apiResults)}}`))
 
 				} catch (err) {
 					controller.enqueue(encoder.encode('{ "type" : "err", "content" : "Error with Huggingface" }'))

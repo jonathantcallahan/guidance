@@ -11,3 +11,4 @@ download.sh
 USE_POLICY
 LICENSE
 SadTalker
+node_modules/
