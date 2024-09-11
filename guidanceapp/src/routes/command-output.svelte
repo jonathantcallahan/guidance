@@ -35,7 +35,6 @@
         setTimeout(iterateLoading, Math.random() * 1500 + 500)
     }
 
-    $: processedResponse && speakResponse()
     const speakResponse = () => {
         if (!audioSettings) return
         const synth = window.speechSynthesis
@@ -56,7 +55,7 @@
             audio: / audio( |$)/.test(prompt.detail.textContent),
             alan: /( |^)alanbotts /.test(prompt.detail.textContent)
         },
-        opt: {
+        opt: { 
             help: / -h( |$)| --help( |$)/.test(prompt.detail.textContent),
             version: / -v( |$)| --version( |$)/.test(prompt.detail.textContent),
             plain: / -p( |$)| --plain( |$)/.test(prompt.detail.textContent),
@@ -103,25 +102,32 @@
         const params = new URLSearchParams(queryObj).toString()
 
         const response = await fetch(baseUrl + params)
-        const reader = response.body.pipeThrough( new TextDecoderStream()).getReader()
-        while (true) {
+        const reader = response.body?.pipeThrough( new TextDecoderStream()).getReader()
+        while (true && reader) {
             const { value, done } = await reader.read()
-            console.log(value)
-            let parsedResponse = JSON.parse(value)
-            if (parsedResponse.value) {
-                currentLoadingStage = parsedResponse.value
-            }
-            if (parsedResponse.content) {
-                 processedResponse = processedResponse + parsedResponse.content
-                // bookName = parsedResponse.content.book
-                // usedEntry = parsedResponse.content.distance < .2
-                // vectorDistance = parsedResponse.content.distance
-                // processedResponse = parsedResponse.content.contents
-                // executionTime = parsedResponse.content.executionTime
-            }
-            if (done) break
-        }
-    }
+            // let parsedResponse = JSON.parse(value)
+            // if (parsedResponse.value) {
+            //     currentLoadingStage = parsedResponse.value
+            // }
+            // if (parsedResponse.content) {
+            //     currentLoadingStage = 3;
+            //     processedResponse = processedResponse ? processedResponse + parsedResponse.content : parsedResponse.content
+            //     // bookName = parsedResponse.content.book
+            //     // usedEntry = parsedResponse.content.distance < .2
+            //     // vectorDistance = parsedResponse.content.distance
+            //     // processedResponse = parsedResponse.content.contents
+            //     // executionTime = parsedResponse.content.executionTime
+            // }
+            console.log(processedResponse)
+            if (value) { processedResponse = processedResponse ? processedResponse + value : value };
+            console.log(processedResponse)
+            if (done) {
+                currentLoadingStage = 4;
+                speakResponse();
+                break;
+            };
+        };
+    };
 
     function commandLogic() {
         if (!pD.com.alan) {
@@ -164,7 +170,7 @@
 </style>
 
 <div id={id}>
-    {#if !pD.opt.library && pD.com.ask && pD.text && currentLoadingStage >= loadingStages.length}
+    {#if !pD.opt.library && pD.com.ask && pD.text}
         <br>
         {#if vectorDistance > .2}
             <div>
@@ -173,8 +179,8 @@
             </div>
             <br>
         {/if}
-        <div>> {pD.text}</div>
-        <div>>>{#if processedResponse}{@html processedResponse}{/if}</div>
+        <div>>  {pD.text}</div>
+        <div>>> {#if processedResponse}{@html processedResponse}{/if}</div>
         <TalkingHead /><br>
         {#if !pD.opt.plain && processedResponse}
             <div class='meta-stats-container'>

@@ -35,7 +35,7 @@ export async function GET({ url }) {
 	const readable = new ReadableStream({
 		async start(controller) {
 
-				controller.enqueue(encoder.encode('{ "type": "stage", "value": 0}'))
+				//controller.enqueue(encoder.encode('{ "type": "stage", "value": 0}'))
 
 				let startTime = Date.now()
 
@@ -49,16 +49,15 @@ export async function GET({ url }) {
 
 				try {
 					const vectorResult = await nearTextQuery(searchText);
-					console.log(vectorResult)
 					vectorResultClean = vectorResult.objects[0]?.properties?.answer?.toString() || ''
 					book = vectorResult.objects[0]?.properties?.book?.toString() || ''
 					distance = vectorResult.objects[0].metadata?.distance || 1
 				} catch (err) {
-					controller.enqueue(encoder.encode('{"type" : "err", "content" : "Error with vector search" }'))
+					//controller.enqueue(encoder.encode('{"type" : "err", "content" : "Error with vector search" }'))
 					controller.close()
 				}
 
-				controller.enqueue(encoder.encode('{"type": "stage", "value": 1}'))
+				//controller.enqueue(encoder.encode('{"type": "stage", "value": 1}'))
 
 				const requestBody = { 
 					inputs: distance > .2 ? inputNoRAG : inputRAG,
@@ -67,49 +66,28 @@ export async function GET({ url }) {
 
 				try {
 					
-					// const inference = new HfInference(process.env.HUGGING_FACE_API_KEY)
-					// const llama = inference.endpoint('https://jq3a4fn9siusw6ee.us-east-1.aws.endpoints.huggingface.cloud')
-					
-					// const results = await llama.textGeneration(requestBody)
-					
-					// console.log(results)
-
-					// let processedText = results?.generated_text?.split('### Response:')[1]
-					
-					// console.log('processed text /n' + processedText)
-
-					// const apiResults = {
-					// 		contents: processedText,
-					// 		distance: distance,
-					// 		book: book,
-					// 		executionTime: Date.now() - startTime
-					// }
 
 					async function main() {
-						console.log('main running')
 						const assistant = await openai.beta.assistants.retrieve("asst_eA8wZ6dtHQdt4Svv6Dupp0ZV");
 						const thread = await openai.beta.threads.create();
 						const message = await openai.beta.threads.messages.create( thread.id, { role: "user", content: searchText });
 						const run = openai.beta.threads.runs.stream(thread.id, {
 							assistant_id: assistant.id
 						  })
-							.on('textCreated', (text) => process.stdout.write('\nassistant > '))
-							.on('textDelta', (textDelta, snapshot) => { controller.enqueue(encoder.encode(`{type: "response stream", content: ${textDelta.value}}`)) })
+							.on('textCreated', (text) => process.stdout.write('\nstream started'))
+							.on('textDelta', (textDelta, snapshot) => controller.enqueue(encoder.encode(`${textDelta.value}`)) )
+							.on('textDone', (text) => controller.close())
+							
+							//.on('textDelta', (textDelta, snapshot) => { controller.enqueue(encoder.encode(`{"type": "response stream", "content" : "${textDelta.value}"}`)) })
 					}
 
 					main();
-
-					
-
-					let apiResults = { test: "test" } 
-
-					//controller.enqueue(encoder.encode(`{"type": "stage", "value": 3, "content": ${JSON.stringify(apiResults)}}`))
 
 				} catch (err) {
 					controller.enqueue(encoder.encode('{ "type" : "err", "content" : "Error with Huggingface" }'))
 					controller.close()
 				}
-				controller.close()
+				
 		}
 	})
 
